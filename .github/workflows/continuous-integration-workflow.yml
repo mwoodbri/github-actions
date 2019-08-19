@@ -1,0 +1,21 @@
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-18.04
+    container: python:3.8
+    steps:
+      - uses: actions/checkout@v1
+      - run: python -munittest
+  push:
+    needs: test
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v1
+      - uses: azure/container-actions/docker-login@master
+        with:
+          login-server: icrse.azurecr.io
+          username: icrse
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+      - run: |
+          docker build . -t icrse.azurecr.io/github-actions -t icrse.azurecr.io/github-actions:${{ github.sha }}
+          docker push icrse.azurecr.io/github-actions
